@@ -1,11 +1,11 @@
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
+const socketIo = require('socket.io');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const connectDB = require('./config/connectDB'); // Ensure this file is correctly set up
 const router = require('./routes/index'); // Ensure this file has your API routes
-const cookieParser = require('cookie-parser');
-const http = require('http');
-const socketIo = require('socket.io');
 
 const PORT = process.env.PORT || 8080;
 
@@ -36,8 +36,8 @@ app.use(cors({
 app.use(express.json()); // Middleware to parse JSON bodies
 app.use(cookieParser()); // Middleware to parse cookies
 
-// Handle preflight requests
-app.options('/api/email', cors({
+// Handle preflight requests for CORS
+app.options('*', cors({
     origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -67,6 +67,7 @@ const io = socketIo(server, {
     }
 });
 
+// Socket.io connection event
 io.on('connection', (socket) => {
     console.log('A user connected');
     socket.on('disconnect', () => {
