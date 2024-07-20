@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 8080;
 
 // Middleware setup
 app.use(cors({
-    origin: 'https://real-time-chat-application-client-krplcmr2n.vercel.app',
+    origin: 'https://real-time-chat-application-client.vercel.app',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
