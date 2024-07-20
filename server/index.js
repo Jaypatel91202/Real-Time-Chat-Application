@@ -9,7 +9,7 @@ const { app, server } = require('./socket/index'); // Ensure WebSocket setup is 
 
 // CORS Configuration
 const corsOptions = {
-    origin: 'https://real-time-chat-application-client.vercel.app', // Specify the allowed origin
+    origin: process.env.FRONTEND_URL, // Specify the allowed origin
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true, // Allow cookies and credentials
