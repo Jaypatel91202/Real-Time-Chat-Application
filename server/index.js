@@ -1,22 +1,27 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const connectDB = require('./config/connectDB'); // Ensure this is configured correctly
-const router = require('./routes/index'); // Your API routes
-const cookiesParser = require('cookie-parser');
-const { app, server } = require('./socket/index'); // Ensure your socket setup is correct
+const connectDB = require('./config/connectDB'); // Ensure this file is correctly set up
+const router = require('./routes/index'); // Ensure this file has your API routes
+const cookieParser = require('cookie-parser');
+const http = require('http');
+const socketIo = require('socket.io');
 
 const PORT = process.env.PORT || 8080;
 
-// Middleware setup
+// Create Express application
+const app = express();
+const server = http.createServer(app);
+
+// Configure CORS
 const allowedOrigins = [
     'https://real-time-chat-application-client.vercel.app',
     'https://real-time-chat-application-client-krplcmr2n.vercel.app'
 ];
 
 app.use(cors({
-    origin: function(origin, callback) {
-        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
@@ -27,17 +32,16 @@ app.use(cors({
     credentials: true,
 }));
 
+// Middleware setup
 app.use(express.json()); // Middleware to parse JSON bodies
-app.use(cookiesParser()); // Middleware to parse cookies
+app.use(cookieParser()); // Middleware to parse cookies
 
 // Simple health check route
 app.get('/', (req, res) => {
-    res.json({
-        message: "Server running at " + PORT,
-    });
+    res.json({ message: "Server running at " + PORT });
 });
 
-// API endpoints
+// API routes
 app.use('/api', router);
 
 // Error handling middleware
@@ -47,7 +51,7 @@ app.use((err, req, res, next) => {
 });
 
 // Socket.io setup
-const io = require('socket.io')(server, {
+const io = socketIo(server, {
     cors: {
         origin: allowedOrigins,
         methods: ['GET', 'POST'],
@@ -55,7 +59,7 @@ const io = require('socket.io')(server, {
     }
 });
 
-// Example of a basic Socket.io event
+// Socket.io connection event
 io.on('connection', (socket) => {
     console.log('A user connected');
     socket.on('disconnect', () => {
@@ -67,7 +71,7 @@ io.on('connection', (socket) => {
 connectDB()
     .then(() => {
         server.listen(PORT, () => {
-            console.log("Server running at " + PORT);
+            console.log("Server running at http://localhost:" + PORT);
         });
     })
     .catch((error) => {
