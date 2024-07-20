@@ -15,8 +15,7 @@ const server = http.createServer(app);
 
 // Configure CORS
 const allowedOrigins = [
-    'https://real-time-chat-application-client.vercel.app',
-    'https://real-time-chat-application-client-krplcmr2n.vercel.app'
+    'https://real-time-chat-application-client.vercel.app'
 ];
 
 app.use(cors({
