@@ -1,46 +1,41 @@
-// Import required modules
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config();
+const connectDB = require('./config/connectDB');
+const router = require('./routes/index');
+const cookiesParser = require('cookie-parser');
+const { app, server } = require('./socket/index'); // Ensure your socket setup is correct
 
-// Create an Express application
-const app = express();
-
-// Middleware to parse JSON bodies
-app.use(express.json());
-
-// CORS configuration
-const corsOptions = {
-  origin: 'https://real-time-chat-application-client.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-};
-
-// Apply CORS middleware with options
-app.use(cors(corsOptions));
-
-// Sample route
-app.post('/api/email', (req, res) => {
-  const email = req.body.email;
-  // Perform necessary operations with email
-  console.log(`Received email: ${email}`);
-
-  // Respond to the client
-  res.status(200).json({ message: 'Email received successfully' });
-});
-
-// Handle non-existent routes
-app.use((req, res, next) => {
-  res.status(404).json({ message: 'Route not found' });
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong' });
-});
-
-// Start the server
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+
+// Middleware setup
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true, // Allows credentials such as cookies to be sent
+}));
+
+app.use(express.json()); // Middleware to parse JSON bodies
+app.use(cookiesParser()); // Middleware to parse cookies
+
+// Simple health check route
+app.get('/', (req, res) => {
+    res.json({
+        message: "Server running at " + PORT,
+    });
 });
+
+// API endpoints
+app.use('/api', router);
+
+// Database connection and server start
+connectDB()
+    .then(() => {
+        server.listen(PORT, () => {
+            console.log("Server running at " + PORT);
+        });
+    })
+    .catch((error) => {
+        console.error("Database connection error:", error);
+    });
