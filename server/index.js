@@ -1,41 +1,46 @@
+// Import required modules
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
-const connectDB = require('./config/connectDB');
-const router = require('./routes/index');
-const cookiesParser = require('cookie-parser');
-const { app, server } = require('./socket/index'); // Ensure your socket setup is correct
 
-const PORT = process.env.PORT || 8080;
+// Create an Express application
+const app = express();
 
-// Middleware setup
-app.use(cors({
-    origin: ["https://real-time-chat-application-client.vercel.app"],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-}));
+// Middleware to parse JSON bodies
+app.use(express.json());
 
-app.use(express.json()); // Middleware to parse JSON bodies
-app.use(cookiesParser()); // Middleware to parse cookies
+// CORS configuration
+const corsOptions = {
+  origin: 'https://real-time-chat-application-client.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
 
-// Simple health check route
-app.get('/', (req, res) => {
-    res.json({
-        message: "Server running at " + PORT,
-    });
+// Apply CORS middleware with options
+app.use(cors(corsOptions));
+
+// Sample route
+app.post('/api/email', (req, res) => {
+  const email = req.body.email;
+  // Perform necessary operations with email
+  console.log(`Received email: ${email}`);
+
+  // Respond to the client
+  res.status(200).json({ message: 'Email received successfully' });
 });
 
-// API endpoints
-app.use('/api', router);
+// Handle non-existent routes
+app.use((req, res, next) => {
+  res.status(404).json({ message: 'Route not found' });
+});
 
-// Database connection and server start
-connectDB()
-    .then(() => {
-        server.listen(PORT, () => {
-            console.log("Server running at " + PORT);
-        });
-    })
-    .catch((error) => {
-        console.error("Database connection error:", error);
-    });
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something went wrong' });
+});
+
+// Start the server
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
