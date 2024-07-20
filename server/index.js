@@ -4,8 +4,8 @@ const http = require('http');
 const socketIo = require('socket.io');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
-const connectDB = require('./config/connectDB'); // Ensure this file is correctly set up
-const router = require('./routes/index'); // Ensure this file has your API routes
+const connectDB = require('./config/connectDB');
+const router = require('./routes/index');
 
 const PORT = process.env.PORT || 8080;
 
@@ -13,9 +13,10 @@ const PORT = process.env.PORT || 8080;
 const app = express();
 const server = http.createServer(app);
 
-// Configure CORS
+// CORS configuration
 const allowedOrigins = [
-    'https://real-time-chat-application-client.vercel.app'
+    'https://real-time-chat-application-client.vercel.app',
+    'https://real-time-chat-application-client-krplcmr2n.vercel.app'
 ];
 
 app.use(cors({
@@ -36,12 +37,7 @@ app.use(express.json()); // Middleware to parse JSON bodies
 app.use(cookieParser()); // Middleware to parse cookies
 
 // Handle preflight requests for CORS
-app.options('*', cors({
-    origin: allowedOrigins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-}));
+app.options('*', cors());
 
 // API routes
 app.use('/api', router);
@@ -66,7 +62,6 @@ const io = socketIo(server, {
     }
 });
 
-// Socket.io connection event
 io.on('connection', (socket) => {
     console.log('A user connected');
     socket.on('disconnect', () => {
