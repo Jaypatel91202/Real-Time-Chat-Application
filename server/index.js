@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 8080;
 
 // Middleware setup
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: 'https://real-time-chat-application-client-krplcmr2n.vercel.app',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
