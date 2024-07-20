@@ -24,9 +24,11 @@ io.on('connection', async (socket) => {
 
   try {
     const token = socket.handshake.auth.token;
+    console.log('Received token:', token);
 
     // Fetch user details from token
     const user = await getUserDetailsFromToken(token);
+    console.log('Fetched user details:', user);
 
     if (!user || !user._id) {
       throw new Error('User details are not valid or missing _id property.');
@@ -40,7 +42,7 @@ io.on('connection', async (socket) => {
 
     // Event listener for 'message-page'
     socket.on('message-page', async (userId) => {
-      console.log('userId', userId);
+      console.log('message-page userId', userId);
       const userDetails = await UserModel.findById(userId).select("-password");
 
       if (!userDetails) {
@@ -70,7 +72,7 @@ io.on('connection', async (socket) => {
 
     // Event listener for 'new message'
     socket.on('new message', async (data) => {
-      // Check conversation between users
+      console.log('new message data:', data);
       let conversation = await ConversationModel.findOne({
         "$or": [
           { sender: data.sender, receiver: data.receiver },
@@ -78,7 +80,6 @@ io.on('connection', async (socket) => {
         ]
       });
 
-      // Create new conversation if not exists
       if (!conversation) {
         const createConversation = await ConversationModel.create({
           sender: data.sender,
@@ -87,7 +88,6 @@ io.on('connection', async (socket) => {
         conversation = createConversation;
       }
 
-      // Save message
       const message = new MessageModel({
         text: data.text,
         imageUrl: data.imageUrl,
@@ -96,16 +96,13 @@ io.on('connection', async (socket) => {
       });
       const saveMessage = await message.save();
 
-      // Update conversation with new message
       await ConversationModel.findByIdAndUpdate(conversation._id, {
         $push: { messages: saveMessage._id }
       });
 
-      // Emit message to sender and receiver
       io.to(data.sender).emit('message', saveMessage);
       io.to(data.receiver).emit('message', saveMessage);
 
-      // Emit updated conversation to sender and receiver
       const conversationSender = await getConversation(data.sender);
       const conversationReceiver = await getConversation(data.receiver);
 
@@ -113,18 +110,15 @@ io.on('connection', async (socket) => {
       io.to(data.receiver).emit('conversation', conversationReceiver);
     });
 
-    // Event listener for 'sidebar'
     socket.on('sidebar', async (currentUserId) => {
-      console.log("current user", currentUserId);
+      console.log("sidebar current user", currentUserId);
 
       const conversation = await getConversation(currentUserId);
 
       socket.emit('conversation', conversation);
     });
 
-    // Event listener for 'seen'
     socket.on('seen', async (msgByUserId) => {
-      // Find conversation
       let conversation = await ConversationModel.findOne({
         "$or": [
           { sender: user._id, receiver: msgByUserId },
@@ -136,7 +130,6 @@ io.on('connection', async (socket) => {
         throw new Error(`Conversation not found between user ${user._id} and ${msgByUserId}.`);
       }
 
-      // Update messages as seen
       await MessageModel.updateMany({
         _id: { $in: conversation.messages },
         msgByUserId: msgByUserId
@@ -144,7 +137,6 @@ io.on('connection', async (socket) => {
         seen: true
       });
 
-      // Emit updated conversation to sender and receiver
       const conversationSender = await getConversation(user._id);
       const conversationReceiver = await getConversation(msgByUserId);
 
@@ -152,7 +144,6 @@ io.on('connection', async (socket) => {
       io.to(msgByUserId).emit('conversation', conversationReceiver);
     });
 
-    // Event listener for 'disconnect'
     socket.on('disconnect', () => {
       onlineUser.delete(user._id.toString());
       console.log('Disconnected User ', socket.id);
@@ -161,7 +152,7 @@ io.on('connection', async (socket) => {
 
   } catch (error) {
     console.error('Error in socket connection:', error.message);
-    socket.disconnect(true); // Disconnect the socket due to error
+    socket.disconnect(true);
   }
 });
 
