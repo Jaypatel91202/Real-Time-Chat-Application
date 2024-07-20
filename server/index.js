@@ -4,20 +4,25 @@ require('dotenv').config();
 const connectDB = require('./config/connectDB');
 const router = require('./routes/index');
 const cookiesParser = require('cookie-parser');
-const { app, server } = require('./socket/index'); // Ensure your socket setup is correct
+const { app, server } = require('./socket/index'); // Ensure WebSocket setup is correct
 
 const PORT = process.env.PORT || 8080;
 
-// Middleware setup
-app.use(cors({
-    origin: ['https://real-time-chat-application-client.vercel.app'],
+// CORS Configuration
+const corsOptions = {
+    origin: 'https://real-time-chat-application-client.vercel.app', // Specify the allowed origin
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true, // Allows credentials such as cookies to be sent
-}));
+    credentials: true, // Allow cookies and credentials
+};
 
+// Middleware setup
+app.use(cors(corsOptions)); // Apply CORS configuration
 app.use(express.json()); // Middleware to parse JSON bodies
 app.use(cookiesParser()); // Middleware to parse cookies
+
+// Handle preflight requests
+app.options('*', cors(corsOptions)); // Enable preflight for all routes
 
 // Simple health check route
 app.get('/', (req, res) => {
