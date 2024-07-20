@@ -6,7 +6,6 @@ const router = require('./routes/index');
 const cookiesParser = require('cookie-parser');
 const { app, server } = require('./socket/index'); // Ensure WebSocket setup is correct
 
-const PORT = process.env.PORT || 8080;
 
 // CORS Configuration
 const corsOptions = {
