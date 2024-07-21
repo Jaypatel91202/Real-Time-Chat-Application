@@ -3,13 +3,15 @@ const cors = require('cors');
 require('dotenv').config();
 const connectDB = require('./config/connectDB');
 const router = require('./routes/index');
-const cookiesParser = require('cookie-parser');
-const { app, server } = require('./socket/index'); // Ensure WebSocket setup is correct
+const cookieParser = require('cookie-parser');
+const { app, server } = require('./socket/index');
+
+const PORT = process.env.PORT || 8080;
 
 
 // CORS Configuration
 const corsOptions = {
-    origin: process.env.FRONTEND_URL, // Specify the allowed origin
+    origin: 'http://localhost:3000', // Temporarily hardcoding to test
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true, // Allow cookies and credentials
@@ -18,7 +20,7 @@ const corsOptions = {
 // Middleware setup
 app.use(cors(corsOptions)); // Apply CORS configuration
 app.use(express.json()); // Middleware to parse JSON bodies
-app.use(cookiesParser()); // Middleware to parse cookies
+app.use(cookieParser()); // Middleware to parse cookies
 
 // Handle preflight requests
 app.options('*', cors(corsOptions)); // Enable preflight for all routes
