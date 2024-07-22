@@ -8,22 +8,21 @@ const { app, server } = require('./socket/index');
 
 const PORT = process.env.PORT || 8080;
 
-
 // CORS Configuration
 const corsOptions = {
-    origin: 'http://localhost:3000', // Temporarily hardcoding to test
+    origin: 'http://localhost:3000', // Adjust based on your client URL
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true, // Allow cookies and credentials
+    credentials: true,
 };
 
 // Middleware setup
-app.use(cors(corsOptions)); // Apply CORS configuration
-app.use(express.json()); // Middleware to parse JSON bodies
-app.use(cookieParser()); // Middleware to parse cookies
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(cookieParser());
 
 // Handle preflight requests
-app.options('*', cors(corsOptions)); // Enable preflight for all routes
+app.options('*', cors(corsOptions));
 
 // Simple health check route
 app.get('/', (req, res) => {

@@ -10,7 +10,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: "https://jay-chat-application.vercel.app", 
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -76,6 +76,8 @@ io.on('connection', async (socket) => {
     socket.on('new message', async (data) => {
       try {
         console.log('New message data:', data);
+        
+        // Check if the message is already processed
         let conversation = await ConversationModel.findOne({
           "$or": [
             { sender: data.sender, receiver: data.receiver },
@@ -103,8 +105,9 @@ io.on('connection', async (socket) => {
           $push: { messages: savedMessage._id }
         });
 
-        io.to(data.sender).emit('message', savedMessage);
-        io.to(data.receiver).emit('message', savedMessage);
+        // Emit message to sender and receiver
+        io.to(data.sender).emit('new-message', savedMessage);
+        io.to(data.receiver).emit('new-message', savedMessage);
 
         const conversationSender = await getConversation(data.sender);
         const conversationReceiver = await getConversation(data.receiver);
